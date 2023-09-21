@@ -11,4 +11,4 @@ class URLForm(FlaskForm):
     custom_id = URLField(
         "Ваш вариант короткой ссылки", validators=[Optional(), Length(1, 16)]
     )
-    sumbit = SubmitField("Создать")
+    submit = SubmitField("Создать")
