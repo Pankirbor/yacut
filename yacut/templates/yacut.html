@@ -75,7 +75,9 @@
             <p class="text-center">
             <h5 class="text-center">Ваша новая ссылка:</h5>
 
-          <a href="{{ url_for('redirect_original_link', new_link=new_link.original, _external=True) }}">{{ url_for('redirect_original_link', new_link=new_link.short, _external=True) }}</a>
+          <a href="{{ url_for('redirect_original_link', short_link=new_link.short, _external=True) }}">
+            {{ url_for('redirect_original_link', short_link=new_link.short, _external=True) }}
+          </a>
             </p>
           </div>
           <div class="col-sm">
