@@ -1,9 +1,9 @@
 from flask import jsonify, request
 
-from yacut import app, db
+from yacut import app
+from yacut.constants import NOT_FOUND
 from yacut.error_handlers import InvalidAPIUsage
 from yacut.models import URLMap
-from yacut.utils import check_request, get_unique_short_id, search_existing_link
 
 
 @app.route("/api/id/", methods=["POST"])
@@ -12,22 +12,11 @@ def create_id():
     создания короткой ссылки."""
 
     data = request.get_json()
-    check_request(data)
+    try:
+        new_link = URLMap.create(data)
 
-    new_link = URLMap()
-    new_link.from_dict(data)
-
-    if new_link.short is None or new_link.short in ("", " "):
-        existing_link = search_existing_link(new_link.original)
-        if existing_link:
-            short = existing_link.short
-        else:
-            short = get_unique_short_id()
-
-        new_link.short = short
-
-    db.session.add(new_link)
-    db.session.commit()
+    except Exception as err:
+        raise InvalidAPIUsage(str(err), 400)
 
     return jsonify(new_link.to_dict()), 201
 
@@ -37,8 +26,8 @@ def get_url(short_id):
     """Обработчик запроса на "/api/id/<short_id>/" для
     для получения оригинальной ссылки по короткой ссылке."""
 
-    link = URLMap.query.filter_by(short=short_id).first()
+    link = URLMap.get_link(short_id)
     if not link:
-        raise InvalidAPIUsage("Указанный id не найден", 404)
+        raise InvalidAPIUsage(NOT_FOUND, 404)
 
     return jsonify({"url": link.to_dict()["url"]}), 200
