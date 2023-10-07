@@ -55,6 +55,15 @@
 ```
 Запуск приложения:
 
+***.env_example***
+```python
+FLASK_APP="Название приложения" # например: yacut
+FLASK_ENV="Режим работы приложения" # например: development
+SECRET_KEY="Секретный ключ состоящий из цифр, латинских букв и знаков пунктуации" # например: 8J2c|(Ljtm"ks47rBAQ\kQp$C
+DATABASE_URI ="Адрес подключения к базе" # например: sqlite:///db.sqlite3
+HOST="Адрес сайта приложения" # например: http://localhost/
+```
+
 ```bash
     flask run
 ```
