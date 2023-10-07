@@ -37,7 +37,7 @@ def test_duplicated_url_in_form(client, short_python_url):
         'original_link': py_url,
         'custom_id': 'py',
     }, follow_redirects=True)
-    assert 'Имя py уже занято!' in got.data.decode('utf-8'), (
+    assert 'Предложенный вариант короткой ссылки уже существует.' in got.data.decode('utf-8'), (
         'Если полученное в запросе короткое имя для ссылки уже занято - на главной странице '
         'после отправки формы должен отобразиться текст "Имя <short_name> уже занято!"'
     )

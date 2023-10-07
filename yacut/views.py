@@ -1,6 +1,7 @@
 from flask import abort, flash, redirect, render_template
 
 from yacut import app
+from yacut.exceptions import InvalidShortNameException
 from yacut.constants import DUPLICATE_NAME_MSG, ACCEPT
 from yacut.models import URLMap
 from yacut.forms import URLForm
@@ -18,18 +19,17 @@ def index_view():
     form = URLForm()
     if form.validate_on_submit():
         params = get_params(form)
-        if params["short"]:
-            if URLMap.get_link(params["short"]):
-                flash(
-                    DUPLICATE_NAME_MSG.format(short=params["short"], punctuation="!"),
-                    category="error",
-                )
-                return render_template("yacut.html", form=form)
+        try:
+            new_link = URLMap.create(**params)
+            flash(ACCEPT, category="done")
 
-        new_link = URLMap.create(**params)
-        flash(ACCEPT, category="done")
+            return render_template("yacut.html", form=form, new_link=new_link)
 
-        return render_template("yacut.html", form=form, new_link=new_link)
+        except InvalidShortNameException:
+            flash(
+                DUPLICATE_NAME_MSG,
+                category="error",
+            )
 
     return render_template("yacut.html", form=form)
 

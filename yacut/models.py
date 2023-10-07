@@ -6,16 +6,18 @@ from random import choices
 from yacut import db
 from yacut.exceptions import InvalidDataError, InvalidShortNameException
 from yacut.constants import (
-    HOST,
-    SIMBOLS,
-    KEYS_DATA,
-    MODEL_FIELDS,
-    MISSING_DATA_MSG,
-    INVALID_NAME_MSG,
     DUPLICATE_NAME_MSG,
-    MAX_LENGTH_SHORT_NAME,
-    PATTERN_VALID_SHORT_NAME,
+    HOST,
+    INVALID_NAME_MSG,
+    KEYS_DATA,
     KEYS_TO_DICT,
+    LENGTH_GENERATE_SHORT_NAME,
+    MAX_LENGTH,
+    MAX_LENGTH_SHORT_NAME,
+    MISSING_DATA_MSG,
+    MODEL_FIELDS,
+    PATTERN_VALID_SHORT_NAME,
+    SIMBOLS,
 )
 
 
@@ -23,8 +25,8 @@ class URLMap(db.Model):
     """Класс описывающий таблицу для базы данных."""
 
     id = db.Column(db.Integer, primary_key=True)
-    original = db.Column(db.String(256), nullable=False, unique=True)
-    short = db.Column(db.String(16), unique=True)
+    original = db.Column(db.String(MAX_LENGTH), nullable=False, unique=True)
+    short = db.Column(db.String(MAX_LENGTH_SHORT_NAME), unique=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     def __setattr__(self, key, value):
@@ -40,9 +42,7 @@ class URLMap(db.Model):
                 raise InvalidShortNameException(INVALID_NAME_MSG)
 
             elif URLMap.get_link(value):
-                raise InvalidShortNameException(
-                    DUPLICATE_NAME_MSG.format(short=f'"{value}"', punctuation=".")
-                )
+                raise InvalidShortNameException(DUPLICATE_NAME_MSG)
 
         super().__setattr__(key, value)
 
@@ -82,36 +82,26 @@ class URLMap(db.Model):
         short_link = None
 
         while True:
-            short_link = "".join(choices(SIMBOLS, k=6))
+            short_link = "".join(
+                choices(
+                    SIMBOLS,
+                    k=LENGTH_GENERATE_SHORT_NAME,
+                )
+            )
             if not cls.get_link(short_link):
                 break
 
         return short_link
 
     @classmethod
-    def __handle_kwargs(cls, kwargs):
-        """Приватный метод для обработки и создания
-        объекта модели с получеными именнованными аргументами."""
+    def create(cls, *args, **kwargs):
+        """Публичный метод для создания объекта модели."""
 
-        if not kwargs.get("short"):
-            existing_link = cls.get_link(kwargs.get("original"), short=False)
-            if existing_link:
-                return existing_link
-
-            short = cls.get_unique_short_id()
-            kwargs.update(dict(short=short))
-        new_link = URLMap(**kwargs)
-        new_link.save()
-        return new_link
-
-    @classmethod
-    def __handle_data(cls, data):
-        """Приватный метод для обработки и создания
-        объекта модели с полученными данными в виде словаря
-        с отличными от атрибутов модели ключами."""
-
-        new_link = URLMap()
-        new_link.from_dict(data)
+        if kwargs:
+            new_link = URLMap(**kwargs)
+        else:
+            new_link = URLMap()
+            new_link.from_dict(args[0])
 
         if not new_link.short:
             existing_link = cls.get_link(new_link.original, short=False)
@@ -120,15 +110,8 @@ class URLMap(db.Model):
 
             new_link.short = cls.get_unique_short_id()
         new_link.save()
+
         return new_link
-
-    @classmethod
-    def create(cls, *args, **kwargs):
-        """Публичный метод для создания объекта модели."""
-
-        if kwargs:
-            return cls.__handle_kwargs(kwargs)
-        return cls.__handle_data(args[0])
 
     @classmethod
     def get_link(cls, link, short=True):

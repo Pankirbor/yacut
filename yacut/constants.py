@@ -1,9 +1,12 @@
+import os
+
 from string import ascii_letters, digits
 
-HOST = "http://localhost/"
+HOST = os.getenv("HOST", default="http://localhost/")
 SIMBOLS = digits + ascii_letters
 PATTERN_VALID_SHORT_NAME = r"[\W\sА-я]+"
 PATTERN_REGEXP_VALIDATOR = r"[^\W\sА-я\s]+$"
+LENGTH_GENERATE_SHORT_NAME = 6
 MAX_LENGTH_SHORT_NAME = 16
 MAX_LENGTH = 256
 MIN_LENGTH = 1
@@ -15,7 +18,7 @@ MODEL_FIELDS = dict(url="original", custom_id="short")
 MISSING_DATA_MSG = "Отсутствует тело запроса"
 INVALID_NAME_MSG = "Указано недопустимое имя для короткой ссылки"
 URL_REQUIRED_MSG = '"url" является обязательным полем!'
-DUPLICATE_NAME_MSG = "Имя {short} уже занято{punctuation}"
+DUPLICATE_NAME_MSG = "Предложенный вариант короткой ссылки уже существует."
 ACCEPT = "Ссылка успешно создана ;)"
 NOT_FOUND = "Указанный id не найден"
 HELP_TEXT_ORIGINAL_LINK = "Введите оригинальную ссылку."
